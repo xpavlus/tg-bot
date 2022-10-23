@@ -1,8 +1,7 @@
 # coding: utf-8
-from sqlalchemy import Column, Date, DateTime, ForeignKey, Index, Integer, TIMESTAMP, Table, text, create_engine
-from sqlalchemy.dialects.mysql import BIGINT, CHAR, INTEGER, LONGTEXT, TEXT, TINYINT, VARCHAR
+from sqlalchemy import Column, Date, DateTime, Index, Integer, TIMESTAMP, text
+from sqlalchemy.dialects.mysql import BIGINT, INTEGER, TEXT, TINYINT, VARCHAR
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
 
 Base = declarative_base()
 metadata = Base.metadata
@@ -70,6 +69,13 @@ class Employee(Base):
     updated_at = Column(TIMESTAMP)
     remember_token = Column(VARCHAR(100))
     objectguid = Column(VARCHAR(36))
+
+    @property
+    def name(self) -> str:
+        _name = [self.last_name, self.first_name]
+        if self.middle_name:
+            _name.append(self.middle_name)
+        return " ".join(_name)
 
     def __repr__(self):
         _attr = [f"{self.last_name} {self.first_name} {self.middle_name or ''}",

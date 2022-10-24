@@ -2,6 +2,10 @@ import json
 import os
 
 
+default_section = "telegram"
+default_config_path = "./config.json"
+
+
 class ConfigException(Exception):
     pass
 
@@ -15,11 +19,9 @@ class ConfigSectionMissing(ConfigException):
 
 
 class Config:
-    default_section = "telegram"
-    default_config_path = "./config.json"
 
     def __init__(self, path: str = None):
-        self.path = path if path else self.default_config_path
+        self.path = path if path else default_config_path
         self._dict = {}
 
     @staticmethod
@@ -37,6 +39,7 @@ class Config:
         if os.path.isfile(self.path):
             with open(self.path) as c:
                 self._dict = json.loads(c.read())
+            return self
         else:
             raise ConfigFileMissing("Config file does not exists")
 
@@ -58,7 +61,7 @@ class Config:
     def get(self, section: str, option: str = None, fallback=None):
         if option is None:
             option = section
-            section = Config.default_section
+            section = default_section
         if self.get_env_var(section, option):
             return self.get_env_var(section, option)
         else:
@@ -70,7 +73,7 @@ class Config:
     def has(self, section: str, option: str = None) -> bool:
         if option is None:
             option = section
-            section = self.default_section
+            section = default_section
         try:
             return bool(self.get_env_var(section, option)) or option in self._dict[section].keys()
         except KeyError:

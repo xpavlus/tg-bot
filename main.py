@@ -1,25 +1,21 @@
 import logging.config
 import re
-
 import corp_model
 import sql
-from sql import employee_search
 
 from telebot import types, TeleBot
+from config import Config
 
-from config import config
+config = Config().open('config.json')
 
-tg_config = config['telegram']
+tg_config = config.get_section('telegram')
 bot = TeleBot(tg_config['token'])
 
-if "logging" in config.keys():
-    logging.config.dictConfig(config["logging"])
+if config.has_section("logging"):
+    logging.config.dictConfig(config.get_section("logging"))
 else:
     logging.basicConfig(format="%(asctime)s - %(message)s", level=logging.INFO)
 log = logging.getLogger(__name__)
-
-stringList = {"Name": "John", "Language": "Python", "API": "pyTelegramBotAPI"}
-crossIcon = u"\u274C"
 
 
 def reply(msg: types.Message, text):
@@ -50,7 +46,7 @@ def button_message(message):
     _name = get_args(message)
     if re.match(r'^[\w\-_@ ]*$', _name):
         reply(message, f"Начинаю искать {_name}")
-        _employes = sql.employee_search(_name)
+        _employes = sql.employee_search({'name': _name})
         if len(_employes) == 1:
             for e in _employes:
                 reply(message, print_employee(e))
@@ -71,6 +67,14 @@ def button_message(message):
         reply(message, f"Странные у вас имена. Попробуйте попроще. {_name}")
 
 
+@bot.callback_query_handler(func=lambda call: True)
+def callback_query(call):
+    router = call.data.split()
+    if router[0] == "employee":
+        _employee_id = router[1]
+        print_employee(sql.employee_search({'id': _employee_id}))
+
+
 if __name__ == "__main__":
-    bot.send_message(129384888, "Starting")
+    bot.send_message(tg_config['chat_id'], "Starting")
     bot.infinity_polling()

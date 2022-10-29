@@ -29,7 +29,7 @@ class Config:
         return f"{section}_{option}"
 
     @staticmethod
-    def get_env_var(section: str, option: str = None, fallback=None):
+    def get_env_var(section: str, option: str = None, fallback: str = None) -> str:
         _var_name = Config.get_full_option_name(section, option)
         return os.getenv(_var_name, fallback)
 

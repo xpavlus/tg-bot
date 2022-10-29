@@ -17,17 +17,23 @@ def generate_non_existent_file(path_base: str = None, file_name_base: str = None
         raise FileExistsError("All attempts to create a config files have failed")
 
 
-def generate_string(length: int = None, symbol_sets: [str] = None):
+def generate_string(
+        length: int = None,
+        use_letters: bool = True,
+        use_numbers: bool = True,
+        use_spec_symbols: bool = False,
+        symbol_sets: str = None):
     if length is None:
         length = random.randint(0, 10)
-    _symbol_sets = {
-        'letters': 'abcdefghijklmnopqrstuvwxyz',
-        'numbers': '0123456789',
-        'spec': '_-+#$@'
-    }
-    if symbol_sets is None:
-        symbol_sets = ['letters', 'numbers']
-    alphabet = ''.join([_symbol_sets[s] for s in symbol_sets])
+    alphabet = ""
+    if use_letters:
+        alphabet += 'abcdefghijklmnopqrstuvwxyz'
+    if use_numbers:
+        alphabet += '0123456789'
+    if use_spec_symbols:
+        alphabet += '_-+#$@'
+    if symbol_sets:
+        alphabet += symbol_sets
     contents = [random.choice(alphabet) for _ in range(length)]
     return ''.join(contents)
 

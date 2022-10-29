@@ -1,6 +1,10 @@
+from typing import List
+
 from sqlalchemy import create_engine, or_
 from sqlalchemy.orm import sessionmaker
-from main import config
+from sqlalchemy.sql.elements import BinaryExpression, BooleanClauseList
+
+from main import config, log
 from corp_model import Employee
 
 sql_config = config.get_section('database')
@@ -11,23 +15,23 @@ _session = sessionmaker(bind=_engine)
 db_session = _session()
 
 
-def employee_search(search_criteria: {str: str}) -> [Employee]:
-    _search_fields = {
-        'name': [
-            Employee.first_name,
-            Employee.last_name,
-            Employee.email],
-        'id': [Employee.id, ]
-    }
-    _search_query = []
-    for cr_name, cr_value in search_criteria.items():
-        _search_query += [c.ilike(f"%{cr_value}%") for c in _search_fields[cr_name]]
+def _employee_search_query(cond) -> list[Employee]:
+    _search = db_session.query(Employee).filter(cond)
+    _st = _search.statement.compile(_engine, compile_kwargs={"literal_binds": True})
+    log.debug(f"Statement: {_st}")
+    return _search.all()
 
-    if len(_search_query) == 1:
-        _filter = _search_query[0]
-    else:
-        _filter = or_(*_search_query)
-    _search = db_session.query(Employee).filter(
-        _filter
-    ).all()
-    return _search
+
+def employee_search_by_name(name: str) -> [Employee]:
+    log.info(f"Trying to find name: {name}")
+    _query = [c.ilike(name) for c in [
+        Employee.first_name,
+        Employee.last_name,
+        Employee.email
+    ]]
+    return _employee_search_query(or_(*_query))
+
+
+def employee_search_by_id(emp_id: str) -> Employee:
+    log.info(f"Trying to find id: {emp_id}")
+    return _employee_search_query(Employee.id == emp_id)[0]

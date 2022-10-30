@@ -15,7 +15,7 @@ _session = sessionmaker(bind=_engine)
 db_session = _session()
 
 
-def _employee_search_query(cond) -> list[Employee]:
+def employee_search_query(cond) -> list[Employee]:
     _search = db_session.query(Employee).filter(cond)
     _st = _search.statement.compile(_engine, compile_kwargs={"literal_binds": True})
     log.debug(f"Statement: {_st}")
@@ -27,11 +27,12 @@ def employee_search_by_name(name: str) -> [Employee]:
     _query = [c.ilike(name) for c in [
         Employee.first_name,
         Employee.last_name,
+        Employee.login,
         Employee.email
     ]]
-    return _employee_search_query(or_(*_query))
+    return employee_search_query(or_(*_query))
 
 
 def employee_search_by_id(emp_id: str) -> Employee:
     log.info(f"Trying to find id: {emp_id}")
-    return _employee_search_query(Employee.id == emp_id)[0]
+    return employee_search_query(Employee.id == emp_id)[0]

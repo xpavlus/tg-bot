@@ -1,7 +1,8 @@
 # coding: utf-8
-from sqlalchemy import Column, Date, DateTime, Index, Integer, TIMESTAMP, text
+from sqlalchemy import Column, Date, DateTime, Index, Integer, TIMESTAMP, text, ForeignKey
 from sqlalchemy.dialects.mysql import BIGINT, INTEGER, TEXT, TINYINT, VARCHAR
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship
 
 Base = declarative_base()
 metadata = Base.metadata
@@ -69,6 +70,8 @@ class Employee(Base):
     updated_at = Column(TIMESTAMP)
     remember_token = Column(VARCHAR(100))
     objectguid = Column(VARCHAR(36))
+    departmentID = Column(Integer, ForeignKey('departments.id'))
+    department = relationship("Department")
 
     @property
     def name(self) -> str:
